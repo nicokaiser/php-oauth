@@ -1,74 +1,81 @@
 <?php
 
-/*  A very naive dbm-based oauth storage
+/**
+ * A very naive dbm-based OAuth storage
  *
- *  NOTE: This is for reference ONLY, 
- *  and contains, amongst others, a hole
- *  where you can get the token secret
- *  easily..
+ * NOTE:
+ * This is for reference ONLY, and contains, amongst others, a hole
+ * where you can get the token secret easily..
  */
-class SimpleOAuthDataStore extends OAuthDataStore {/*{{{*/
-  private $dbh;
+class SimpleOAuthDataStore extends \OAuth\DataStore {
 
-  function __construct($path = "oauth.gdbm") {/*{{{*/
-    $this->dbh = dba_popen($path, 'c', 'gdbm');
-  }/*}}}*/
+    private $dbh;
 
-  function __destruct() {/*{{{*/
-    dba_close($this->dbh);
-  }/*}}}*/
-
-  function lookup_consumer($consumer_key) {/*{{{*/
-    $rv = dba_fetch("consumer_$consumer_key", $this->dbh);
-    if ($rv === FALSE) {
-      return NULL;
+    function __construct($path = "oauth.gdbm")
+    {
+        $this->dbh = dba_popen($path, 'c', 'gdbm');
     }
-    $obj = unserialize($rv);
-    if (!($obj instanceof OAuthConsumer)) {
-      return NULL;
+
+    function __destruct()
+    {
+        dba_close($this->dbh);
     }
-    return $obj;
-  }/*}}}*/
 
-  function lookup_token($consumer, $token_type, $token) {/*{{{*/
-    $rv = dba_fetch("${token_type}_${token}", $this->dbh);
-    if ($rv === FALSE) {
-      return NULL;
+    function lookupConsumer($consumerKey)
+    {
+        $rv = dba_fetch("consumer_$consumerKey", $this->dbh);
+        if ($rv === false) {
+            return null;
+        }
+        $obj = unserialize($rv);
+        if (!($obj instanceof \OAuth\Consumer)) {
+            return null;
+        }
+        return $obj;
     }
-    $obj = unserialize($rv);
-    if (!($obj instanceof OAuthToken)) {
-      return NULL;
+    
+    function lookupToken($consumer, $tokenType, $token)
+    {
+        $rv = dba_fetch("${tokenType}_${token}", $this->dbh);
+        if ($rv === false) {
+            return null;
+        }
+        $obj = unserialize($rv);
+        if (!($obj instanceof \OAuth\Token)) {
+            return null;
+        }
+        return $obj;
     }
-    return $obj;
-  }/*}}}*/
 
-  function lookup_nonce($consumer, $token, $nonce, $timestamp) {/*{{{*/
-    if (dba_exists("nonce_$nonce", $this->dbh)) {
-      return TRUE;
-    } else {
-      dba_insert("nonce_$nonce", "1", $this->dbh);
-      return FALSE;
+    function lookupNonce($consumer, $token, $nonce, $timestamp) {
+        if (dba_exists("nonce_$nonce", $this->dbh)) {
+            return true;
+        } else {
+            dba_insert("nonce_$nonce", "1", $this->dbh);
+            return false;
+        }
     }
-  }/*}}}*/
-
-  function new_token($consumer, $type="request") {/*{{{*/
-    $key = md5(time());
-    $secret = time() + time();
-    $token = new OAuthToken($key, md5(md5($secret)));
-    if (!dba_insert("${type}_$key", serialize($token), $this->dbh)) {
-      throw new OAuthException("doooom!");
+    
+    function newToken($consumer, $type = "request")
+    {
+        $key = md5(time());
+        $secret = time() + time();
+        $token = new \OAuth\Token($key, md5(md5($secret)));
+        if (!dba_insert("${type}_$key", serialize($token), $this->dbh)) {
+            throw new \OAuth\Exception("doooom!");
+        }
+        return $token;
     }
-    return $token;
-  }/*}}}*/
 
-  function new_request_token($consumer) {/*{{{*/
-    return $this->new_token($consumer, "request");
-  }/*}}}*/
-
-  function new_access_token($token, $consumer) {/*{{{*/
-
-    $token = $this->new_token($consumer, 'access');
-    dba_delete("request_" . $token->key, $this->dbh);
-    return $token;
-  }/*}}}*/
-}/*}}}*/
+    public function newRequestToken($consumer)
+    {
+        return $this->newToken($consumer, "request");
+    }
+    
+    public function newAccessToken($token, $consumer)
+    {
+        $token = $this->newToken($consumer, 'access');
+        dba_delete("request_" . $token->getKey(), $this->dbh);
+        return $token;
+    }
+}

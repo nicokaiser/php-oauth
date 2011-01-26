@@ -1,3 +1,5 @@
+== 2011-01-25 ==
+* Refactor for PHP 5.3
 == 2008.08.04 ==
 * Added LICENSE.txt file with MIT license, copyright owner is perhaps
 	dubious however.

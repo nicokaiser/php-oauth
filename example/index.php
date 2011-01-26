@@ -1,25 +1,25 @@
 <?php
+
 require_once("common.inc.php");
 
-
-$test_consumer = new OAuthConsumer("key", "secret", NULL);
-$req_token = new OAuthConsumer("requestkey", "requestsecret", 1);
-$acc_token = new OAuthConsumer("accesskey", "accesssecret", 1);
+$test_consumer = new \OAuth\Consumer("key", "secret", NULL);
+$req_token = new \OAuth\Consumer("requestkey", "requestsecret", 1);
+$acc_token = new \OAuth\Consumer("accesskey", "accesssecret", 1);
 
 $sig_method = $hmac_method;
 $user_sig_method = @$_GET['sig_method'];
 if ($user_sig_method) {
-  $sig_method = $sig_methods[$user_sig_method];
+    $sig_method = $sig_methods[$user_sig_method];
 }
 
-$req_req = OAuthRequest::from_consumer_and_token($test_consumer, NULL, "GET", $base_url . "/request_token.php");
-$req_req->sign_request($sig_method, $test_consumer, NULL);
+$req_req = \OAuth\Request::fromConsumerAndToken($test_consumer, NULL, "GET", $base_url . "/request_token.php");
+$req_req->signRequest($sig_method, $test_consumer, NULL);
 
-$acc_req = OAuthRequest::from_consumer_and_token($test_consumer, $req_token, "GET", $base_url . "/access_token.php");
-$acc_req->sign_request($sig_method, $test_consumer, $req_token);
+$acc_req = \OAuth\Request::fromConsumerAndToken($test_consumer, $req_token, "GET", $base_url . "/access_token.php");
+$acc_req->signRequest($sig_method, $test_consumer, $req_token);
 
-$echo_req = OAuthRequest::from_consumer_and_token($test_consumer, $acc_token, "GET", $base_url . "/echo_api.php", array("method"=> "foo%20bar", "bar" => "baz"));
-$echo_req->sign_request($sig_method, $test_consumer, $acc_token);
+$echo_req = \OAuth\Request::fromConsumerAndToken($test_consumer, $acc_token, "GET", $base_url . "/echo_api.php", array("method"=> "foo%20bar", "bar" => "baz"));
+$echo_req->signRequest($sig_method, $test_consumer, $acc_token);
 
 ?>
 <html>
@@ -84,10 +84,10 @@ A successful request will echo the non-OAuth parameters sent to it, for example:
 <p>Current signing method is: <?php echo $user_sig_method ?></p>
 <ul>
 <?php
-$sig_methods = $test_server->get_signature_methods();
+$sig_methods = $test_server->getSignatureMethods();
 foreach ($sig_methods as $key => $method) {
   print "<li>$key";
-  if ($key != $sig_method->get_name()) {
+  if ($key != $sig_method->getName()) {
     print "(<a href='?sig_method=$key'>switch</a>)";
   }
   print "</li>\n";
@@ -96,9 +96,9 @@ foreach ($sig_methods as $key => $method) {
 </ul>
 
 <?php 
-if ("RSA-SHA1" == $sig_method->get_name()) {
-  print "<pre>" . $sig_method->fetch_private_cert($req_req) . "</pre>\n";
-  print "<pre>" . $sig_method->fetch_public_cert($req_req) . "</pre>\n";
+if ("RSA-SHA1" == $sig_method->getName()) {
+  print "<pre>" . $sig_method->fetchPrivateCert($req_req) . "</pre>\n";
+  print "<pre>" . $sig_method->fetchPublicCert($req_req) . "</pre>\n";
 }
 ?>
 
