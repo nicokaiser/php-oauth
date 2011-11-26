@@ -175,6 +175,14 @@ class RequestTest extends \PHPUnit_Framework_TestCase {
 
         \OAuth\Tests\TestUtils::buildRequest('POST', 'http://example.com:443');
         $this->assertEquals('http://example.com:443', \OAuth\Request::fromRequest()->getNormalizedHttpUrl());
+        
+        \OAuth\Tests\TestUtils::buildRequest('POST', 'http://Example.COM');
+        $this->assertEquals('http://example.com', \OAuth\Request::fromRequest()->getNormalizedHttpUrl());
+        
+        // Emulate silly behavior by some clients, where there Host header includes the port
+        \OAuth\Tests\TestUtils::buildRequest('POST', 'http://example.com');
+        $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'];
+        $this->assertEquals('http://example.com', \OAuth\Request::fromRequest()->getNormalizedHttpUrl());
     }
 
     public function testBuildPostData() {
