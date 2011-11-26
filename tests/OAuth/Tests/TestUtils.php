@@ -43,6 +43,7 @@ class TestUtils
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['HTTP_HOST'] = $host;
+        $_SERVER['SERVER_NAME'] = $host;
         $_SERVER['SERVER_PORT'] = $port;
         $_SERVER['SCRIPT_NAME'] = $path;
         $_SERVER['REQUEST_URI'] = $path . '?' . $query;

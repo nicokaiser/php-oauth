@@ -51,7 +51,7 @@ class Request
     {
         $scheme = (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") ? 'http' : 'https';
         $httpUrl = ($httpUrl) ? $httpUrl : $scheme .
-            '://' . $_SERVER['HTTP_HOST'] .
+            '://' . $_SERVER['SERVER_NAME'] .
             ':' .
             $_SERVER['SERVER_PORT'] .
             $_SERVER['REQUEST_URI'];
